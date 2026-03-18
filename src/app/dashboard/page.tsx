@@ -1,7 +1,7 @@
 import { Plus, Settings, HelpCircle, FileText, Download, Edit, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function DashboardPage() {
   // Temporary mock data until Supabase is hooked up
