@@ -9,6 +9,17 @@ import { useEffect, useState } from "react";
 
 export function LivePreviewPanel() {
   const { data } = useResumeStore();
+  
+  // Debounce the data to prevent react-pdf from crashing on rapid keystrokes
+  const [debouncedData, setDebouncedData] = useState(data);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedData(data);
+    }, 500); // 500ms debounce
+    return () => clearTimeout(timer);
+  }, [data]);
+
   // We need to mount the PDFViewer only on the client side 
   // because @react-pdf relies on browser APIs that break SSR.
   const [isClient, setIsClient] = useState(false);
@@ -27,8 +38,8 @@ export function LivePreviewPanel() {
     );
   }
 
-  const fileName = data.personalInfo.fullName 
-    ? `${data.personalInfo.fullName.replace(/\s+/g, '_')}_Resume.pdf` 
+  const fileName = debouncedData.personalInfo.fullName 
+    ? `${debouncedData.personalInfo.fullName.replace(/\s+/g, '_')}_Resume.pdf` 
     : 'Resume.pdf';
 
   return (
@@ -40,7 +51,7 @@ export function LivePreviewPanel() {
             Professional Template
          </div>
          <div className="w-px h-6 bg-slate-200"></div>
-         <PDFDownloadLink document={<ResumePDF data={data} />} fileName={fileName}>
+         <PDFDownloadLink document={<ResumePDF data={debouncedData} />} fileName={fileName}>
             {({ loading }) => (
               <Button 
                 size="sm" 
@@ -58,7 +69,7 @@ export function LivePreviewPanel() {
       <div className="flex-1 overflow-hidden p-4 md:p-8 pt-20 flex items-center relative z-10 w-full h-full">
          <div className="w-full h-full max-w-5xl mx-auto shadow-2xl rounded-sm overflow-hidden border border-slate-200 bg-white">
             <PDFViewer width="100%" height="100%" className="border-none bg-slate-50">
-               <ResumePDF data={data} />
+               <ResumePDF data={debouncedData} />
             </PDFViewer>
          </div>
       </div>

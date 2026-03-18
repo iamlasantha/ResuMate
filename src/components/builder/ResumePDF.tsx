@@ -1,92 +1,104 @@
 "use client";
 
-import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import { ResumeData } from '@/lib/store/useResumeStore';
-
-// Register a standard font. Note: For production with specific languages, 
-// you may need to register external TTF files providing full unicode support.
-Font.register({
-  family: 'Inter',
-  fonts: [
-    { src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2', fontWeight: 400 },
-    { src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuGKYAZ9hiA.woff2', fontWeight: 600 },
-    { src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuFuYAZ9hiA.woff2', fontWeight: 700 },
-  ]
-});
 
 // Styles for the PDF
 const styles = StyleSheet.create({
   page: {
-    padding: 40,
-    fontFamily: 'Inter',
-    fontSize: 11,
-    color: '#334155', // slate-700
-    backgroundColor: '#ffffff'
+    paddingTop: 40,
+    paddingBottom: 40,
+    paddingLeft: 50,
+    paddingRight: 50,
+    fontSize: 10,
+    color: '#333333',
+    backgroundColor: '#ffffff',
   },
   header: {
-    marginBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0', // slate-200
-    paddingBottom: 10,
+    marginBottom: 24,
+    textAlign: 'center',
   },
   name: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 700,
-    color: '#0f172a', // slate-900
+    color: '#111827',
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
     marginBottom: 4,
   },
   title: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: 600,
-    color: '#2563eb', // blue-600
-    marginBottom: 8,
+    color: '#2563eb', // Primary Blue Accent
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 12,
   },
-  contact: {
+  contactContainer: {
     flexDirection: 'row',
+    justifyContent: 'center',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: 12,
+  },
+  contactItem: {
+    fontSize: 9,
+    color: '#4b5563',
+  },
+  bulletPointContainer: {
+    flexDirection: 'row',
+    marginBottom: 2,
+    paddingLeft: 4,
+  },
+  bulletPoint: {
+    width: 10,
     fontSize: 10,
-    color: '#64748b', // slate-500
   },
   section: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
   sectionTitle: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: 700,
-    color: '#0f172a',
+    color: '#111827',
     textTransform: 'uppercase',
-    marginBottom: 8,
+    letterSpacing: 1,
+    marginBottom: 10,
     paddingBottom: 4,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9', // slate-100
+    borderBottomColor: '#d1d5db', // subtle gray line
   },
   text: {
+    color: '#374151',
     lineHeight: 1.5,
   },
   experienceItem: {
-    marginBottom: 12,
+    marginBottom: 14,
   },
   experienceHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'baseline',
-    marginBottom: 4,
+    alignItems: 'flex-end',
+    marginBottom: 3,
   },
   company: {
-    fontSize: 12,
-    fontWeight: 600,
-    color: '#0f172a',
+    fontSize: 11,
+    fontWeight: 700,
+    color: '#111827',
   },
   dates: {
-    fontSize: 10,
-    color: '#64748b',
+    fontSize: 9,
+    color: '#6b7280',
   },
   role: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: 600,
-    color: '#475569',
+    color: '#2563eb',
     marginBottom: 4,
+  },
+  descriptionPoint: {
+    fontSize: 9.5,
+    color: '#4b5563',
+    marginBottom: 3,
   },
   skillsContainer: {
     flexDirection: 'row',
@@ -94,14 +106,36 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   skillTag: {
-    backgroundColor: '#f1f5f9',
-    paddingHorizontal: 6,
-    paddingVertical: 3,
+    backgroundColor: '#f3f4f6',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     borderRadius: 4,
     fontSize: 9,
-    color: '#334155',
+    color: '#374151',
+    fontWeight: 600,
   }
 });
+
+// Helper component for bullet points
+const BulletList = ({ text }: { text: string }) => {
+  // Split by newlines or actual bullet characters
+  const points = text.split(/\n|•/).filter(p => p.trim() !== '');
+  
+  if (points.length <= 1 && !text.includes('\n') && !text.includes('•')) {
+    return <Text style={styles.descriptionPoint}>{text}</Text>;
+  }
+
+  return (
+    <View>
+      {points.map((point, i) => (
+        <View key={i} style={styles.bulletPointContainer}>
+          <Text style={styles.bulletPoint}>•</Text>
+          <Text style={styles.descriptionPoint}>{point.trim()}</Text>
+        </View>
+      ))}
+    </View>
+  );
+};
 
 // The actual PDF Component
 export const ResumePDF = ({ data }: { data: ResumeData }) => (
@@ -111,19 +145,20 @@ export const ResumePDF = ({ data }: { data: ResumeData }) => (
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.name}>{data.personalInfo.fullName || 'Your Name'}</Text>
-        <Text style={styles.title}>{data.personalInfo.jobTitle || 'Your Job Title'}</Text>
-        <View style={styles.contact}>
-          {data.personalInfo.email && <Text>{data.personalInfo.email}</Text>}
-          {data.personalInfo.phone && <Text>• {data.personalInfo.phone}</Text>}
-          {data.personalInfo.address && <Text>• {data.personalInfo.address}</Text>}
-          {data.personalInfo.linkedin && <Text>• {data.personalInfo.linkedin}</Text>}
+        {(data.personalInfo.jobTitle) && <Text style={styles.title}>{data.personalInfo.jobTitle}</Text>}
+        
+        <View style={styles.contactContainer}>
+          {data.personalInfo.email && <Text style={styles.contactItem}>{data.personalInfo.email}</Text>}
+          {data.personalInfo.phone && <Text style={styles.contactItem}>|   {data.personalInfo.phone}</Text>}
+          {data.personalInfo.address && <Text style={styles.contactItem}>|   {data.personalInfo.address}</Text>}
+          {data.personalInfo.linkedin && <Text style={styles.contactItem}>|   {data.personalInfo.linkedin}</Text>}
         </View>
       </View>
 
       {/* Summary */}
       {data.summary && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Professional Summary</Text>
+          <Text style={styles.sectionTitle}>Summary</Text>
           <Text style={styles.text}>{data.summary}</Text>
         </View>
       )}
@@ -131,7 +166,7 @@ export const ResumePDF = ({ data }: { data: ResumeData }) => (
       {/* Experience */}
       {data.workExperience.some(exp => exp.company || exp.role) && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Work Experience</Text>
+          <Text style={styles.sectionTitle}>Experience</Text>
           {data.workExperience.map((exp) => {
             if (!exp.company && !exp.role) return null;
             return (
@@ -139,11 +174,11 @@ export const ResumePDF = ({ data }: { data: ResumeData }) => (
                 <View style={styles.experienceHeader}>
                   <Text style={styles.company}>{exp.company}</Text>
                   <Text style={styles.dates}>
-                    {exp.startDate} {exp.startDate && exp.endDate && '-'} {exp.endDate}
+                    {exp.startDate} {(exp.startDate || exp.endDate) && '-'} {exp.endDate}
                   </Text>
                 </View>
-                <Text style={styles.role}>{exp.role}</Text>
-                {exp.description && <Text style={styles.text}>{exp.description}</Text>}
+                {exp.role && <Text style={styles.role}>{exp.role}</Text>}
+                {exp.description && <BulletList text={exp.description} />}
               </View>
             );
           })}
@@ -162,7 +197,7 @@ export const ResumePDF = ({ data }: { data: ResumeData }) => (
                   <Text style={styles.company}>{edu.institution}</Text>
                   <Text style={styles.dates}>{edu.graduationYear}</Text>
                 </View>
-                <Text style={styles.role}>{edu.degree}</Text>
+                {edu.degree && <Text style={styles.role}>{edu.degree}</Text>}
               </View>
             );
           })}
