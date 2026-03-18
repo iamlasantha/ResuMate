@@ -26,6 +26,7 @@ export type ResumeData = {
     graduationYear: string;
   }>;
   skills: string[];
+  template: 'professional' | 'modern' | 'minimal';
 };
 
 interface ResumeStore {
@@ -40,6 +41,7 @@ interface ResumeStore {
   removeEducation: (id: string) => void;
   addSkill: (skill: string) => void;
   removeSkill: (skill: string) => void;
+  setTemplate: (template: ResumeData['template']) => void;
 }
 
 const initialData: ResumeData = {
@@ -64,6 +66,7 @@ const initialData: ResumeData = {
   ],
   education: [],
   skills: [],
+  template: 'professional',
 };
 
 export const useResumeStore = create<ResumeStore>((set) => ({
@@ -137,6 +140,13 @@ export const useResumeStore = create<ResumeStore>((set) => ({
       data: {
         ...state.data,
         skills: state.data.skills.filter((skill) => skill !== skillToRemove),
+      },
+    })),
+  setTemplate: (template) =>
+    set((state) => ({
+      data: {
+        ...state.data,
+        template,
       },
     })),
 }));

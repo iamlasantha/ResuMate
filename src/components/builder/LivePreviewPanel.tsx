@@ -3,12 +3,14 @@
 import { useResumeStore } from "@/lib/store/useResumeStore";
 import { PDFViewer, PDFDownloadLink } from "@react-pdf/renderer";
 import { ResumePDF } from "./ResumePDF";
+import { ResumeMinimal } from "./ResumeMinimal";
+import { ResumeModern } from "./ResumeModern";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Download, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-
 export function LivePreviewPanel() {
-  const { data } = useResumeStore();
+  const { data, setTemplate } = useResumeStore();
   
   // Debounce the data to prevent react-pdf from crashing on rapid keystrokes
   const [debouncedData, setDebouncedData] = useState(data);
@@ -38,7 +40,15 @@ export function LivePreviewPanel() {
     );
   }
 
-  const fileName = debouncedData.personalInfo.fullName 
+  const getActiveTemplate = (resumeData: any) => {
+    switch (resumeData.template) {
+      case 'minimal': return <ResumeMinimal data={resumeData} />;
+      case 'modern': return <ResumeModern data={resumeData} />;
+      case 'professional': default: return <ResumePDF data={resumeData} />;
+    }
+  };
+
+  const fileName = debouncedData.personalInfo.fullName  
     ? `${debouncedData.personalInfo.fullName.replace(/\s+/g, '_')}_Resume.pdf` 
     : 'Resume.pdf';
 
@@ -47,11 +57,20 @@ export function LivePreviewPanel() {
       
       {/* Floating Toolbar */}
       <header className="absolute top-4 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-md shadow-lg border border-slate-200/60 rounded-full px-2 py-2 flex items-center gap-4 z-20">
-         <div className="pl-4 pr-2 text-sm font-semibold text-slate-700">
-            Professional Template
+         <div className="pl-2 pr-2">
+            <Select value={data.template} onValueChange={(v: any) => setTemplate(v)}>
+              <SelectTrigger className="w-[180px] h-9 bg-transparent border-none shadow-none focus-visible:ring-0 text-slate-700 font-semibold">
+                <SelectValue placeholder="Select Template" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="professional">Professional</SelectItem>
+                <SelectItem value="modern">Modern</SelectItem>
+                <SelectItem value="minimal">Minimal</SelectItem>
+              </SelectContent>
+            </Select>
          </div>
          <div className="w-px h-6 bg-slate-200"></div>
-         <PDFDownloadLink document={<ResumePDF data={debouncedData} />} fileName={fileName}>
+         <PDFDownloadLink document={getActiveTemplate(debouncedData)} fileName={fileName}>
             {({ loading }) => (
               <Button 
                 size="sm" 
@@ -69,7 +88,7 @@ export function LivePreviewPanel() {
       <div className="flex-1 overflow-hidden p-4 md:p-8 pt-20 flex items-center relative z-10 w-full h-full">
          <div className="w-full h-full max-w-5xl mx-auto shadow-2xl rounded-sm overflow-hidden border border-slate-200 bg-white">
             <PDFViewer width="100%" height="100%" className="border-none bg-slate-50">
-               <ResumePDF data={debouncedData} />
+               {getActiveTemplate(debouncedData)}
             </PDFViewer>
          </div>
       </div>
